@@ -1,4 +1,3 @@
-
 # The CalDove Information Update System
 
 from flask import Flask
@@ -111,18 +110,18 @@ def generate_instruction_table(start, end, events):
             # write action before event
             if i == 0:
                 duration = events[0].start - start
-                duration_in_minutes = round(duration.total_seconds()/60)
-                output += str(duration_in_minutes) + " 5 5 10\n"
+                duration_in_milliseconds = duration.total_seconds() * 1000
+                output += "{:.0f}".format(duration_in_milliseconds) + " 5 5 10<br>"
             else:
                 duration = events[i].start - events[i-1].end
-                duration_in_minutes = round(duration.total_seconds()/60)
-                if duration_in_minutes >= 1:
-                    output += str(duration_in_minutes) + " 5 5 10\n"
+                duration_in_milliseconds = duration.total_seconds() * 1000
+                if duration_in_milliseconds >= 1:
+                    output += "{:.0f}".format(duration_in_milliseconds) + " 5 5 10<br>"
     
             # write action while event
             duration = events[i].end - events[i].start
-            duration_in_minutes = round(duration.total_seconds()/60)
-            output += str(duration_in_minutes) + " " + color_table[events[i].description]
+            duration_in_milliseconds = duration.total_seconds() * 1000
+            output += "{:.0f}".format(duration_in_milliseconds) + " " + color_table[events[i].description] + "<br>"
 
             # find next event
             if i < len(events) - 1:
@@ -132,16 +131,16 @@ def generate_instruction_table(start, end, events):
                     j+=1
                 # write action after event
                 duration = events[j].start - events[i].end
-                duration_in_minutes = round(duration.total_seconds()/60)
-                if duration_in_minutes >= 1:
-                    output += str(duration_in_minutes) + " 5 5 10\n"
+                duration_in_milliseconds = duration.total_seconds() * 1000
+                if duration_in_milliseconds >= 1:
+                    output += "{:.0f}".format(duration_in_milliseconds) + " 5 5 10<br>"
                 i = j - 1
             else:
                 # write action after event
                 duration = end - events[i].end
-                duration_in_minutes = round(duration.total_seconds()/60)
-                if duration_in_minutes >= 1:
-                    output += str(duration_in_minutes) + " 5 5 10\n"
+                duration_in_milliseconds = duration.total_seconds() * 1000
+                if duration_in_milliseconds >= 1:
+                    output += "{:.0f}".format(duration_in_milliseconds) + " 5 5 10<br>"
     return output
             
 def display_events(events):
@@ -174,20 +173,15 @@ def main():
 
     #display_events(span_events)
 
-    today = datetime.fromisoformat('2021-11-17 00:00:00.000+00:00')#datetime.now(tz=timezone(timedelta(0)))
+    today = datetime.now(tz=timezone(timedelta(0)))
     tommorrow =  today + timedelta(hours=24)
 
     sessions = events(string_content=cal.to_ical(), start=today, end=tommorrow)
     
     #sessions = find_sessions_inbetween(sessions, today, tommorrow+timedelta(2))
 
-    site += generate_instruction_table(today, tommorrow, sessions)
-    #es  = events("https://ics.teamup.com/feed/kspxzt6i8jabqw7icn/0.ics", start=today, end=tommorrow)
-    #print(es)
+    site += "<div id=\"data\">" + generate_instruction_table(today, tommorrow, sessions) + "</div>"
 
-
-    # site += fetchICAL("https://stackoverflow.com/questions/17634052/python-library-to-access-a-caldav-server")
-    site += getValues()
     return site
 
 main()
